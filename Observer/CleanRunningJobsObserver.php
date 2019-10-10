@@ -11,17 +11,17 @@ use Magento\Framework\Event\ObserverInterface;
 
 class CleanRunningJobsObserver implements ObserverInterface
 {
-    /** @var \Magento\Framework\App\Config\ScopeConfigInterface */
-    private $scopeConfig;
+    /** @var Config */
+    private $configHelper;
 
     /** @var CleanRunningJobs */
     private $cleanRunningJobs;
 
     public function __construct(
         CleanRunningJobs $cleanRunningJobs,
-        ScopeConfigInterface $scopeConfig
+        Config $configHelper
     ) {
-        $this->scopeConfig = $scopeConfig;
+        $this->configHelper = $configHelper;
         $this->cleanRunningJobs = $cleanRunningJobs;
     }
 
@@ -31,11 +31,10 @@ class CleanRunningJobsObserver implements ObserverInterface
      * "Process went away"
      *
      * @param \Magento\Framework\Event\Observer $observer
-     * @throws \Magento\Framework\Exception\AlreadyExistsException
      */
     public function execute(Observer $observer)
     {
-        if (!$this->scopeConfig->getValue(Config::PATH_CLEAN_RUNNING)) {
+        if (!$this->configHelper->getConfig('clean_running_schedule')) {
             return;
         }
 

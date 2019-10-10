@@ -68,14 +68,14 @@ class Processor
 
     /**
      * Runs a scheduled job
-     * 
+     *
      * @param string $scheduledTime
      * @param string $currentTime
      * @param string $jobConfig
      * @param \Magento\Cron\Model\Schedule $schedule
      * @param int $groupId
      * @throws \Exception
-     * @throws Ambigous <\Exception, \RuntimeException>
+     * @throws \Throwable
      * @deprecated
      */
     public function runJob($scheduledTime, $currentTime, $jobConfig, $schedule, $groupId)
@@ -128,19 +128,17 @@ class Processor
             $jobCode
         ));
     }
-    
+
     /**
      * Runs a scheduled job
      *
-     * @param string $scheduledTime
-     * @param string $currentTime
-     * @param string $jobConfig
+     * @param array $jobConfig
      * @param \Magento\Cron\Model\Schedule $schedule
-     * @param int $groupId
-     * @throws \Exception
-     * @throws Ambigous <\Exception, \RuntimeException>
+     * @throws \Magento\Framework\Exception\AlreadyExistsException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Throwable
      */
-    public function runScheduledJob($jobConfig, $schedule)
+    public function runScheduledJob(array $jobConfig, $schedule)
     {
         $jobCode = $schedule->getJobCode();
         

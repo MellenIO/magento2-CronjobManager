@@ -16,11 +16,11 @@ class JobConfig extends AbstractHelper
     private $configWriter;
     
     /**
-     * @var EthanYehuda\CronjobManager\Model\Manager
+     * @var \EthanYehuda\CronjobManager\Model\Manager
      */
-    private $manager;
+    protected $manager;
     
-    private $jobs = null;
+    protected $jobs = null;
     
     public function __construct(
         Context $context,
@@ -31,7 +31,11 @@ class JobConfig extends AbstractHelper
         $this->configWriter = $configWriter;
         $this->manager = $managerFactory->create();
     }
-    
+
+    /**
+     * @param string $jobCode
+     * @return array|bool
+     */
     public function getJobData($jobCode)
     {
         if(is_null($this->jobs)) {
@@ -47,26 +51,39 @@ class JobConfig extends AbstractHelper
         
         return false;
     }
-    
+
+    /**
+     * @param string $path
+     * @param string $frequency
+     */
     public function saveJobFrequencyConfig($path, $frequency)
     {
         $this->configWriter->save($path, $frequency);
     }
-    
+
+    /**
+     * @param string $path
+     */
     public function restoreSystemDefault($path)
     {
         $this->configWriter->delete($path);
     }
-    
+
+    /**
+     * @param $jobCode
+     * @param null $group
+     * @return string
+     * @throws ValidatorException
+     */
     public function constructFrequencyPath($jobCode, $group = null)
     {
         $validGroupId = $this->manager->getGroupId($jobCode);
         if (!$validGroupId) {
-            throw new ValidatorException("Job Code: $jobCode does not exist in the system");
+            throw new ValidatorException(__('Job Code: %1 does not exist in the system', $jobCode));
         }
         if ($group) {
             if ($group != $validGroupId) {
-                throw new ValidatorException("Invalid Group ID: $group for $jobCode");
+                throw new ValidatorException(__('Invalid Group ID: %1 for %2', $group, $jobCode));
             }
         } else {
             $group = $validGroupId;
@@ -74,13 +91,18 @@ class JobConfig extends AbstractHelper
         return "crontab/$group/jobs/$jobCode/schedule/cron_expr";
     }
 
+    /**
+     * Cleans a job config, providing it with defaults to prevent method failure
+     *
+     * @param array $job
+     * @return array
+     */
     public function sanitizeJobConfig(array $job)
     {
-        $job['name'] = !empty($job['name']) ? $job['name'] : '';
-        $job['group'] = !empty($job['group']) ? $job['group'] : '';
-        $job['schedule'] = !empty($job['schedule']) ? $job['schedule'] : '';
-        $job['instance'] = !empty($job['instance']) ? $job['instance'] : ''; 
-        $job['method'] = !empty($job['method']) ? $job['method'] : '';
+        $fields = [ 'name', 'group', 'schedule', 'instance', 'method' ];
+        foreach ($fields as $field) {
+            $job[$field] = $job[$field] ?? '';
+        }
         return $job;
     }
 }
